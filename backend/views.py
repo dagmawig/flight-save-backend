@@ -1,12 +1,12 @@
+import json
 from django.http import JsonResponse
 from django.shortcuts import render
 from pymongo import MongoClient
 import os
 from dotenv import load_dotenv
-import requests
+import requests, json
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-
 
 load_dotenv()
 
@@ -26,11 +26,15 @@ priceline_api = {
 }
 }
 
+f = open('data.json')
+data = json.load(f)
+# print(data)
+
 @api_view(['GET'])
 def get(request):
     if(request.method == "GET"):
         print("gets here", request.body)
-        response = requests.request("GET", priceline_api['url'], headers=priceline_api['headers'], params=priceline_api['querystring'])
+        # response = requests.request("GET", priceline_api['url'], headers=priceline_api['headers'], params=priceline_api['querystring'])
         # response = requests.get("https://anapioficeandfire.com/api/houses/1")
-        print(response.text)
-        return Response(response.text)
+        # print(response.text)
+        return Response(data)
