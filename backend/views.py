@@ -1,4 +1,3 @@
-import json
 from django.http import JsonResponse
 from django.shortcuts import render
 from pymongo import MongoClient
@@ -25,6 +24,15 @@ priceline_api = {
 	"X-RapidAPI-Key": "53ccb0e66bmsh883175eecd2c429p13df65jsna6c7198d36a1"
 }
 }
+
+# priceline_api2 = {
+#     "url": "https://priceline-com-provider.p.rapidapi.com/v1/flights/search",
+#     "querystring": {"date_departure":"2022-06-17","class_type":"ECO","itinerary_type":"ROUND_TRIP","location_arrival":"NYC","location_departure":"LAS","sort_order":"PRICE","date_departure_return":"2022-06-21","duration_max":"2051","number_of_passengers":"1","price_max":"330","number_of_stops":"1"}, 
+#     "headers": {
+# 	"X-RapidAPI-Host": "priceline-com-provider.p.rapidapi.com",
+# 	"X-RapidAPI-Key": "53ccb0e66bmsh883175eecd2c429p13df65jsna6c7198d36a1"
+# }
+# }
 
 f = open('data.json')
 data = json.load(f)
@@ -83,10 +91,11 @@ class Flight:
 flightData = Flight(data)
 
 @api_view(['GET'])
-def get(request):
+def search(request):
     if(request.method == "GET"):
         print("gets here", request.body)
         # response = requests.request("GET", priceline_api['url'], headers=priceline_api['headers'], params=priceline_api['querystring'])
+        # return Response(json.loads(response.text))
         # response = requests.get("https://anapioficeandfire.com/api/houses/1")
         # print(response.text)
         return Response(flightData.output())

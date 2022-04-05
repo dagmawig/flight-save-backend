@@ -3,5 +3,5 @@ from . import views
 
 
 urlpatterns = [
-    path("get/", views.get, name="get")
+    path("search/", views.search, name="search")
 ]
