@@ -1,11 +1,11 @@
 from django.http import JsonResponse
 from django.shortcuts import render
 from pymongo import MongoClient
-import os
 from dotenv import load_dotenv
-import requests, json
+import requests, json, os
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from .dataModel import insertUser
 
 load_dotenv()
 
@@ -99,3 +99,11 @@ def search(request):
         # response = requests.get("https://anapioficeandfire.com/api/houses/1")
         # print(response.text)
         return Response(flightData.output())
+
+@api_view(['POST'])
+def loadData(request):
+    if(request.method == 'POST'):
+        body = request.body.decode('utf-8')
+        bodyData = json.loads(body)
+        return Response(insertUser(bodyData))
+        
