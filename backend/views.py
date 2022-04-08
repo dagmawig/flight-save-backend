@@ -5,7 +5,8 @@ from dotenv import load_dotenv
 import requests, json, os
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from .dataModel import insertUser
+from .dataModel import insertUser, findUser
+import asyncio
 
 load_dotenv()
 
@@ -105,5 +106,14 @@ def loadData(request):
     if(request.method == 'POST'):
         body = request.body.decode('utf-8')
         bodyData = json.loads(body)
-        return Response(insertUser(bodyData))
+        # print(bodyData["userID"])
+        response = findUser(bodyData)
+        if(response["success"]):
+            return Response(json.loads(json.dumps(response, default=str)))
+        else:
+            inserted = asyncio.run(insertUser(bodyData))
+            if(inserted["success"]):
+                return Response(json.loads(json.dumps(findUser(bodyData), default=str)))
+            else:
+                return Response(json.loads(json.dumps(inserted, default=str)))
         
