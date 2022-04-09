@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import requests, json, os
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from .dataModel import insertUser, findUser, saveSearchData
+from .dataModel import insertUser, findUser, saveSearchData, searchFlight
 from .flight import Flight
 import asyncio
 
@@ -41,18 +41,25 @@ data = json.load(f)
 # print(data)
 
 
-
-flightData = Flight(data)
-
 @api_view(['GET'])
 def search(request):
     if(request.method == "GET"):
         print("gets here", request.body)
-        # response = requests.request("GET", priceline_api['url'], headers=priceline_api['headers'], params=priceline_api['querystring'])
-        # return Response(json.loads(response.text))
-        # response = requests.get("https://anapioficeandfire.com/api/houses/1")
-        # print(response.text)
-        return Response(json.loads(json.dumps(flightData.output(), default=str)))
+        body = request.body.decode('utf-8')
+        bodyData = json.loads(body)
+        if(bodyData['searchFilter']['type'] == "ONE_WAY"):
+            response = searchFlight(bodyData['searchFilter']['dep'])
+            if(response['success']):
+                flightData = Flight(response['data']['searchResult'])
+                res = {"success": True, "data": {"dep":  flightData.output(), "ret": None}}
+                return Response(json.loads(json.dumps(res, default=str)))
+        else:
+            resDep = searchFlight(bodyData['searchFilter']['dep'])
+            resRet = searchFlight(bodyData['searchFilter']['ret'])
+            flightDataDep = Flight(resDep['data']['searchResult'])
+            flightDataRet = Flight(resRet['data']['searchResult'])
+            res = {"success": True, "data": {"dep":  flightDataDep.output(), "ret": flightDataRet.output()}}
+            return Response(json.loads(json.dumps(res, default=str)))
 
 @api_view(['POST'])
 def loadData(request):

@@ -1,6 +1,6 @@
 from wsgiref.validate import validator
 from pymongo import MongoClient
-import os
+import os, requests, json
 from dotenv import load_dotenv
 from datetime import datetime
 from pymongo.collection import ReturnDocument
@@ -16,7 +16,7 @@ url = os.getenv('URL')
 
 priceline_api = {
     "url": url,
-    "querystring": {"class_type":"ECO","sort_order":"PRICE","number_of_passengers":"1"}, 
+    "querystring": {"class_type":"ECO","sort_order":"PRICE","number_of_passengers":"1", "itinerary_type": "ONE_WAY"}, 
     "headers": {
 	"X-RapidAPI-Host": "priceline-com-provider.p.rapidapi.com",
 	"X-RapidAPI-Key": "53ccb0e66bmsh883175eecd2c429p13df65jsna6c7198d36a1"
@@ -78,5 +78,25 @@ def saveSearchData(userData):
         user = db['users'].find_one_and_update({"userID": userData["userID"]},
         {"$push": {"searchData":  userData['searchData']}}, return_document=ReturnDocument.AFTER)
         return {"success": True, "data": {"user": user}}
+    except Exception as e:
+        return {"success": False, "error": e}
+
+def searchFlight(searchData):
+    try:
+        type(searchData['date_departure']) == str
+        type(searchData['location_arrival']) == str
+        type(searchData['location_departure']) == str
+        type(searchData['number_of_stops']) == str
+    except Exception as e:
+        return {"success": False, "error": f"type error: {e}"}
+    try:
+        priceline_api['querystring']['date_departure'] = searchData['date_departure']
+        priceline_api['querystring']['location_arrival'] = searchData['location_arrival']
+        priceline_api['querystring']['location_departure'] = searchData['location_departure']
+        priceline_api['querystring']['number_of_stops'] = searchData['number_of_stops']
+
+        response = requests.request("GET", priceline_api['url'], headers=priceline_api['headers'], params=priceline_api['querystring'])
+        print("search result", response.text)
+        return {"success": True, "data": {"searchResult": json.loads(response.text)}}
     except Exception as e:
         return {"success": False, "error": e}
