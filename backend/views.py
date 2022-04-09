@@ -5,7 +5,8 @@ from dotenv import load_dotenv
 import requests, json, os
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from .dataModel import insertUser, findUser
+from .dataModel import insertUser, findUser, saveSearchData
+from .flight import Flight
 import asyncio
 
 load_dotenv()
@@ -39,55 +40,7 @@ f = open('data.json')
 data = json.load(f)
 # print(data)
 
-class Flight:
-    def __init__(self, data):
-        self.data = data
-    def getAirline(self):
-        airlineArr = []
-        for  iten in self.data["pricedItinerary"]:
-            airlineArr.append(self.getAirlineName(iten["pricingInfo"]["ticketingAirline"]))
-        return airlineArr
-    def getAirlineName(self, code):
-        for airline in self.data["airline"]:
-            if(airline["code"]==code):
-                return airline["name"]
-    def getAirportName(self, code):
-        for airport in self.data["airport"]:
-            if(airport["code"]==code):
-                return airport["name"]
-    def getTotalPrice(self):
-        totPriceArr = []
-        for iten in self.data["pricedItinerary"]:
-            totPriceArr.append(iten["pricingInfo"]["totalFare"])
-        return totPriceArr
-    def flightInfo(self):
-        sliceIDArr = []
-        for iten in self.data["pricedItinerary"]:
-            sliceIDArr.append(iten["slice"][0]["uniqueSliceId"])
-        segmentIDArr, totDurationArr, overnightArr, cabinNameArr, flightTimeArr, destAirArr = [], [], [], [], [], []
-        for sliceID in sliceIDArr:
-            for sliceD in self.data["slice"]:
-                if(sliceD["uniqueSliceId"]==sliceID):
-                    temp = []
-                    for segment in sliceD["segment"]:
-                        temp.append(segment["uniqueSegId"])
-                    segmentIDArr.append(temp)
-                    totDurationArr.append(sliceD["duration"])
-                    overnightArr.append(sliceD["overnightLayover"])
-                    cabinNameArr.append(sliceD["segment"][0]["cabinName"])
-        for segArr in segmentIDArr:
-            temp2, temp3 = [], []
-            for segID in segArr:
-                for segD in self.data["segment"]:
-                    if(segD["uniqueSegId"]==segID):
-                        temp2.append(segD["departDateTime"])
-                        temp2.append(segD["arrivalDateTime"])
-                        temp3.append(self.getAirportName(segD["destAirport"]))
-            flightTimeArr.append(temp2)  
-            destAirArr.append(temp3) 
-        return {"sliceIDArr": sliceIDArr, "segmentIDArr": segmentIDArr, "totDurationArr": totDurationArr, "overnightArr": overnightArr, "cabinNameArr": cabinNameArr, "flightTimeArr": flightTimeArr, "destAirArr": destAirArr}
-    def output(self):
-        return {"airline": self.getAirline(), "totPrice": self.getTotalPrice(), "flightInfo":  self.flightInfo()}
+
 
 flightData = Flight(data)
 
@@ -99,7 +52,7 @@ def search(request):
         # return Response(json.loads(response.text))
         # response = requests.get("https://anapioficeandfire.com/api/houses/1")
         # print(response.text)
-        return Response(flightData.output())
+        return Response(json.loads(json.dumps(flightData.output(), default=str)))
 
 @api_view(['POST'])
 def loadData(request):
@@ -117,3 +70,10 @@ def loadData(request):
             else:
                 return Response(json.loads(json.dumps(inserted, default=str)))
         
+@api_view(['POST'])
+def saveSearch(request):
+    if(request.method == 'POST'):
+        body = request.body.decode('utf-8')
+        bodyData = json.loads(body)
+        response = saveSearchData(bodyData)
+        return Response(json.loads(json.dumps(response, default=str)))
