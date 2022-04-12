@@ -90,5 +90,5 @@ def checkPrice(request):
     if(request.method == 'POST'):
         body = request.body.decode('utf-8')
         bodyData = json.loads(body)
-        checkP()
-        return Response({"place holder": "place holder"})
+        response = checkP()
+        return Response(json.loads(json.dumps(response, default=str)))

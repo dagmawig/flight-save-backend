@@ -96,7 +96,6 @@ def searchFlight(searchData):
         priceline_api['querystring']['number_of_stops'] = searchData['number_of_stops']
 
         response = requests.request("GET", priceline_api['url'], headers=priceline_api['headers'], params=priceline_api['querystring'])
-        print("search result", response.text)
         return {"success": True, "data": {"searchResult": json.loads(response.text)}}
     except Exception as e:
         return {"success": False, "error": e}
@@ -113,7 +112,7 @@ def checkP():
         newSearchData = []
         for search in searchData:
             dateNow = datetime.utcnow().strftime("%Y-%m-%d")
-            if(dateNow<search['dep']['date_departure'] & search["alertP"] != None):
+            if(dateNow<search['dep']['date_departure'] and search["alertP"] != None):
                 resDep = searchFlight(search['dep'])
                 if(resDep['success']):
                     flightDep = Flight(resDep['data']['searchResult']).output()
@@ -146,7 +145,7 @@ def checkP():
         except Exception as e:
             userMessage[user["userID"]]['data update'] = e
             print({"success": False, "error": e})
-            
+
         userMessageArr.append(userMessage)
 
     return userMessageArr
