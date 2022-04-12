@@ -1,6 +1,6 @@
 from wsgiref.validate import validator
 from pymongo import MongoClient
-import os, requests, json
+import os, requests, json, copy
 from dotenv import load_dotenv
 from datetime import datetime
 from pymongo.collection import ReturnDocument
@@ -100,3 +100,56 @@ def searchFlight(searchData):
         return {"success": True, "data": {"searchResult": json.loads(response.text)}}
     except Exception as e:
         return {"success": False, "error": e}
+
+def checkP():
+    try:
+        usersCursor = db['users'].find({})
+        userArr = list(usersCursor)
+    except Exception as e:
+        return {"success": False, "error": e}
+    userMessageArr = []
+    for user in userArr:
+        searchData = user['searchData']
+        newSearchData = []
+        for search in searchData:
+            dateNow = datetime.utcnow().strftime("%Y-%m-%d")
+            if(dateNow<search['dep']['date_departure'] & search["alertP"] != None):
+                resDep = searchFlight(search['dep'])
+                if(resDep['success']):
+                    flightDep = Flight(resDep['data']['searchResult']).output()
+                else:
+                    flightDep = search['searchResult']['dep']
+                if(search['type'] == "ROUND_TRIP"):
+                    resRet = searchFlight(search['ret'])
+                    if(resRet['success']):
+                        flightRet = Flight(resRet['data']['searchResult']).output()
+                    else:
+                        flightRet = search['searchResult']['ret']
+                else:
+                    flightRet = None
+                newSearch = copy.deepcopy(search)
+                newSearch["date_updated"] = datetime.utcnow()
+                newSearch["searchResult"] = {"dep": flightDep, "ret": flightRet}
+                newSearchData.append(newSearch)
+            else:
+                newSearchData.append(search)
+        userMessage = {user["userID"]: {"data update": None, "email": None}}
+        try:
+            db['users'].find_one_and_update({"userID": user["userID"]},
+            {"$set": {"searchData": newSearchData}}, return_document=ReturnDocument.AFTER)
+            try:
+                emailPriceAlert(newSearchData)
+                userMessage[user["userID"]]['email'] = "success"
+            except Exception as e:
+                userMessage[user["userID"]]['email'] = e
+            userMessage[user["userID"]]['data update'] = "success"
+        except Exception as e:
+            userMessage[user["userID"]]['data update'] = e
+            print({"success": False, "error": e})
+            
+        userMessageArr.append(userMessage)
+
+    return userMessageArr
+
+def emailPriceAlert(fetchedSearchedData):
+    return "to be worked on later"

@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import requests, json, os
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from .dataModel import insertUser, findUser, saveSearchData, searchFlight
+from .dataModel import insertUser, findUser, saveSearchData, searchFlight, checkP
 from .flight import Flight
 import asyncio
 
@@ -84,3 +84,11 @@ def saveSearch(request):
         bodyData = json.loads(body)
         response = saveSearchData(bodyData)
         return Response(json.loads(json.dumps(response, default=str)))
+
+@api_view(['POST'])
+def checkPrice(request):
+    if(request.method == 'POST'):
+        body = request.body.decode('utf-8')
+        bodyData = json.loads(body)
+        checkP()
+        return Response({"place holder": "place holder"})
