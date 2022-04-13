@@ -36,9 +36,9 @@ priceline_api = {
 # }
 # }
 
-f = open('data.json')
-data = json.load(f)
-# print(data)
+# f = open('data.json')
+# data = json.load(f)
+# # print(data)
 
 
 @api_view(['GET'])
