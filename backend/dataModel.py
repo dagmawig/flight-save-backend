@@ -150,5 +150,30 @@ def checkP():
 
     return userMessageArr
 
+def delSearch(userData):
+    try:
+        type(userData['userID']) == str
+        type(userData['dateCreated']) == str   
+    except Exception as e:
+        return {"success": False, "error": f"type error: {e}"}
+    try:
+        user = db['users'].find_one({"userID": userData["userID"]})
+        date = datetime.utcnow()
+        print(userData['dateCreated'], user['searchData'][0]['date_created'])
+        newSearchData = updateSearchData(user['searchData'], userData['dateCreated'])
+        updatedUser = db['users'].find_one_and_update({"userID": userData["userID"]},
+        {"$set": {"searchData":  newSearchData}}, return_document=ReturnDocument.AFTER)
+        return {"success": True, "data": {"user": updatedUser}}
+    except Exception as e:
+        return {"success": False, "error": e}
+
+
 def emailPriceAlert(fetchedSearchedData):
     return "to be worked on later"
+
+def updateSearchData(arr, date):
+    newArr = []
+    for search in arr:
+        if(search['date_created'].timestamp() != datetime.strptime(date, '%Y-%m-%d %H:%M:%S.%f').timestamp()):
+            newArr.append(search)
+    return newArr

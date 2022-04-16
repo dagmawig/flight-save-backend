@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import requests, json, os
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from .dataModel import insertUser, findUser, saveSearchData, searchFlight, checkP
+from .dataModel import delSearch, insertUser, findUser, saveSearchData, searchFlight, checkP, delSearch
 from .flight import Flight
 import asyncio
 
@@ -91,4 +91,12 @@ def checkPrice(request):
         body = request.body.decode('utf-8')
         bodyData = json.loads(body)
         response = checkP()
+        return Response(json.loads(json.dumps(response, default=str)))
+
+@api_view(['POST'])
+def deleteSearch(request):
+    if(request.method == 'POST'):
+        body = request.body.decode('utf-8')
+        bodyData = json.loads(body)
+        response = delSearch(bodyData)
         return Response(json.loads(json.dumps(response, default=str)))
