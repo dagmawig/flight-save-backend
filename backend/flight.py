@@ -23,7 +23,7 @@ class Flight:
         sliceIDArr = []
         for iten in self.data["pricedItinerary"]:
             sliceIDArr.append(iten["slice"][0]["uniqueSliceId"])
-        segmentIDArr, totDurationArr, overnightArr, cabinNameArr, flightTimeArr, destAirArr = [], [], [], [], [], []
+        segmentIDArr, totDurationArr, overnightArr, cabinNameArr, flightTimeArr, airArr = [], [], [], [], [], []
         for sliceID in sliceIDArr:
             for sliceD in self.data["slice"]:
                 if(sliceD["uniqueSliceId"]==sliceID):
@@ -37,13 +37,16 @@ class Flight:
         for segArr in segmentIDArr:
             temp2, temp3 = [], []
             for segID in segArr:
+                temp4 = []
                 for segD in self.data["segment"]:
                     if(segD["uniqueSegId"]==segID):
                         temp2.append(segD["departDateTime"])
                         temp2.append(segD["arrivalDateTime"])
-                        temp3.append(self.getAirportName(segD["destAirport"]))
+                        temp4.append(self.getAirportName(segD["origAirport"]))
+                        temp4.append(self.getAirportName(segD["destAirport"]))
+                temp3.append(temp4)
             flightTimeArr.append(temp2)  
-            destAirArr.append(temp3) 
-        return {"sliceIDArr": sliceIDArr, "segmentIDArr": segmentIDArr, "totDurationArr": totDurationArr, "overnightArr": overnightArr, "cabinNameArr": cabinNameArr, "flightTimeArr": flightTimeArr, "destAirArr": destAirArr}
+            airArr.append(temp3) 
+        return {"sliceIDArr": sliceIDArr, "segmentIDArr": segmentIDArr, "totDurationArr": totDurationArr, "overnightArr": overnightArr, "cabinNameArr": cabinNameArr, "flightTimeArr": flightTimeArr, "airArr": airArr}
     def output(self):
         return {"airline": self.getAirline(), "totPrice": self.getTotalPrice(), "flightInfo":  self.flightInfo(), "raw_data": self.data}
