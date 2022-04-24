@@ -23,7 +23,7 @@ class Flight:
         sliceIDArr = []
         for iten in self.data["pricedItinerary"]:
             sliceIDArr.append(iten["slice"][0]["uniqueSliceId"])
-        segmentIDArr, totDurationArr, overnightArr, cabinNameArr, flightTimeArr, airArr = [], [], [], [], [], []
+        segmentIDArr, totDurationArr, overnightArr, cabinNameArr, flightTimeArr, airArr, airCodeArr = [], [], [], [], [], [], []
         for sliceID in sliceIDArr:
             for sliceD in self.data["slice"]:
                 if(sliceD["uniqueSliceId"]==sliceID):
@@ -35,18 +35,22 @@ class Flight:
                     overnightArr.append(sliceD["overnightLayover"])
                     cabinNameArr.append(sliceD["segment"][0]["cabinName"])
         for segArr in segmentIDArr:
-            temp2, temp3 = [], []
+            temp2, temp3, temp5 = [], [], []
             for segID in segArr:
-                temp4 = []
+                temp4, temp6 = [], []
                 for segD in self.data["segment"]:
                     if(segD["uniqueSegId"]==segID):
                         temp2.append(segD["departDateTime"])
                         temp2.append(segD["arrivalDateTime"])
                         temp4.append(self.getAirportName(segD["origAirport"]))
                         temp4.append(self.getAirportName(segD["destAirport"]))
+                        temp6.append(segD["origAirport"])
+                        temp6.append(segD["destAirport"])
                 temp3.append(temp4)
+                temp5.append(temp6)
             flightTimeArr.append(temp2)  
             airArr.append(temp3) 
-        return {"sliceIDArr": sliceIDArr, "segmentIDArr": segmentIDArr, "totDurationArr": totDurationArr, "overnightArr": overnightArr, "cabinNameArr": cabinNameArr, "flightTimeArr": flightTimeArr, "airArr": airArr}
+            airCodeArr.append(temp5)
+        return {"sliceIDArr": sliceIDArr, "segmentIDArr": segmentIDArr, "totDurationArr": totDurationArr, "overnightArr": overnightArr, "cabinNameArr": cabinNameArr, "flightTimeArr": flightTimeArr, "airArr": airArr, "airCodeArr": airCodeArr}
     def output(self):
         return {"airline": self.getAirline(), "totPrice": self.getTotalPrice(), "flightInfo":  self.flightInfo(), "raw_data": self.data}
