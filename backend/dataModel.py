@@ -87,6 +87,7 @@ def searchFlight(searchData):
         type(searchData['location_arrival']) == str
         type(searchData['location_departure']) == str
         type(searchData['number_of_stops']) == str
+        type(searchData['classType']) == str
     except Exception as e:
         return {"success": False, "error": f"type error: {e}"}
     try:
@@ -94,9 +95,14 @@ def searchFlight(searchData):
         priceline_api['querystring']['location_arrival'] = searchData['location_arrival']
         priceline_api['querystring']['location_departure'] = searchData['location_departure']
         priceline_api['querystring']['number_of_stops'] = searchData['number_of_stops']
+        priceline_api['querystring']['class_type'] = searchData['classType']
 
         response = requests.request("GET", priceline_api['url'], headers=priceline_api['headers'], params=priceline_api['querystring'])
-        return {"success": True, "data": {"searchResult": json.loads(response.text)}}
+        if "pricedItinerary" in json.loads(response.text):
+            return {"success": True, "data": {"searchResult": json.loads(response.text)}}
+        else:
+            return {"success": False, "message": "No Result"}
+        
     except Exception as e:
         return {"success": False, "error": e}
 

@@ -44,7 +44,6 @@ priceline_api = {
 @api_view(['GET'])
 def search(request):
     if(request.method == "GET"):
-        print("gets here", request.body)
         body = request.body.decode('utf-8')
         bodyData = json.loads(body)
         if(bodyData['searchFilter']['type'] == "ONE_WAY"):
@@ -53,6 +52,9 @@ def search(request):
                 flightData = Flight(response['data']['searchResult'])
                 res = {"success": True, "data": {"dep":  flightData.output(), "ret": None}}
                 return Response(json.loads(json.dumps(res, default=str)))
+            else:
+                return Response(json.loads(json.dumps(response, default=str)))
+
         else:
             resDep = searchFlight(bodyData['searchFilter']['dep'])
             resRet = searchFlight(bodyData['searchFilter']['ret'])
