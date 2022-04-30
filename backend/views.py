@@ -41,9 +41,9 @@ priceline_api = {
 # # print(data)
 
 
-@api_view(['GET'])
+@api_view(['POST'])
 def search(request):
-    if(request.method == "GET"):
+    if(request.method == "POST"):
         body = request.body.decode('utf-8')
         bodyData = json.loads(body)
         if(bodyData['searchFilter']['type'] == "ONE_WAY"):
