@@ -46,22 +46,13 @@ def search(request):
     if(request.method == "POST"):
         body = request.body.decode('utf-8')
         bodyData = json.loads(body)
-        if(bodyData['searchFilter']['type'] == "ONE_WAY"):
-            response = searchFlight(bodyData['searchFilter']['dep'])
-            if(response['success']):
-                flightData = Flight(response['data']['searchResult'])
-                res = {"success": True, "data": {"dep":  flightData.output(), "ret": None}}
-                return Response(json.loads(json.dumps(res, default=str)))
-            else:
-                return Response(json.loads(json.dumps(response, default=str)))
-
-        else:
-            resDep = searchFlight(bodyData['searchFilter']['dep'])
-            resRet = searchFlight(bodyData['searchFilter']['ret'])
-            flightDataDep = Flight(resDep['data']['searchResult'])
-            flightDataRet = Flight(resRet['data']['searchResult'])
-            res = {"success": True, "data": {"dep":  flightDataDep.output(), "ret": flightDataRet.output()}}
+        response = searchFlight(bodyData['searchFilter'])
+        if(response['success']):
+            flightData = Flight(response['data']['searchResult'])
+            res = {"success": True, "data":  flightData.output()}
             return Response(json.loads(json.dumps(res, default=str)))
+        else:
+            return Response(json.loads(json.dumps(response, default=str)))
 
 @api_view(['POST'])
 def loadData(request):

@@ -58,18 +58,14 @@ def findUser(userData):
 def saveSearchData(userData):
     try:
         type(userData["userID"])  == str
-        type(userData['searchData']['type']) == str
         type(userData['searchData']['name']) == str
+        type(userData['searchData']['classType']) == str
+        type(userData['searchData']['alertPrice']) == str
+        type(userData['searchData']['date_departure']) == str
+        type(userData['searchData']['location_departure']) == str
+        type(userData['searchData']['location_arrival']) == str
+        type(userData['searchData']['number_of_stops']) == str
         type(userData['searchData']['searchResult']) == dict
-        type(userData['searchData']['dep']['date_departure']) == str
-        type(userData['searchData']['dep']['location_arrival']) == str
-        type(userData['searchData']['dep']['location_departure']) == str
-        type(userData['searchData']['dep']['number_of_stops']) == str
-        if(userData['searchData']['type'] == "round_trip"):
-            type(userData['searchData']['arr']['date_departure']) == str
-            type(userData['searchData']['arr']['location_arrival']) == str
-            type(userData['searchData']['arr']['location_departure']) == str
-            type(userData['searchData']['arr']['number_of_stops']) == str
     except Exception as e:
         return {"success": False, "error": f"type error: {e}"}
     try:
@@ -84,8 +80,8 @@ def saveSearchData(userData):
 def searchFlight(searchData):
     try:
         type(searchData['date_departure']) == str
-        type(searchData['location_arrival']) == str
         type(searchData['location_departure']) == str
+        type(searchData['location_arrival']) == str
         type(searchData['number_of_stops']) == str
         type(searchData['classType']) == str
     except Exception as e:
@@ -98,8 +94,12 @@ def searchFlight(searchData):
         priceline_api['querystring']['class_type'] = searchData['classType']
 
         response = requests.request("GET", priceline_api['url'], headers=priceline_api['headers'], params=priceline_api['querystring'])
-        if "pricedItinerary" in json.loads(response.text):
-            return {"success": True, "data": {"searchResult": json.loads(response.text)}}
+        respJson = json.loads(response.text)
+        if "pricedItinerary" in respJson:
+            if respJson['pricedItinerary'] != None:
+                return {"success": True, "data": {"searchResult": json.loads(response.text)}}
+            else:
+                return {"success": False, "message": "No Result"}
         else:
             return {"success": False, "message": "No Result"}
         
