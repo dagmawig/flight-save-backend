@@ -173,6 +173,19 @@ def delSearch(userData):
     except Exception as e:
         return {"success": False, "error": e}
 
+def upSearch(userData):
+    print(userData['userID'])
+    try:
+        type(userData['userID']) == str
+        type(userData['savedSearch']) == list
+    except Exception as e:
+        return {"success": False, "error": f"type error: {e}"}
+    try:
+        updatedUser = db['users'].find_one_and_update({"userID": userData["userID"]},
+        {"$set": {"searchData":  userData['savedSearch']}}, return_document=ReturnDocument.AFTER)
+        return {"success": True, "data": {"user": updatedUser}}
+    except Exception as e:
+        return {"success": False, "error": e}
 
 def emailPriceAlert(fetchedSearchedData):
     return "to be worked on later"

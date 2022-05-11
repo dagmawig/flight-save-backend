@@ -7,5 +7,6 @@ urlpatterns = [
     path("loadData/", views.loadData, name="loadData"),
     path("saveSearch/", views.saveSearch, name="saveSearch"),
     path("checkPrice/", views.checkPrice, name="checkPrice"),
-    path("deleteSearch/", views.deleteSearch, name="deleteSearch")
+    path("deleteSearch/", views.deleteSearch, name="deleteSearch"),
+    path("updateSearch/", views.updateSearch, name="updateSearch")
 ]
