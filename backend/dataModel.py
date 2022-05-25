@@ -4,6 +4,8 @@ import os, requests, json, copy
 from dotenv import load_dotenv
 from datetime import datetime
 from pymongo.collection import ReturnDocument
+
+from backend.sendE import sendEmail
 from .flight import Flight
 
 load_dotenv()
@@ -107,6 +109,9 @@ def searchFlight(searchData):
         return {"success": False, "error": e}
 
 def checkP():
+    checkDate = datetime.utcnow().weekday()
+    if(checkDate != 1):
+        return {"message": "not the right day to check price", "date": checkDate}
     try:
         usersCursor = db['users'].find({})
         userArr = list(usersCursor)
@@ -118,43 +123,32 @@ def checkP():
         newSearchData = []
         for search in searchData:
             dateNow = datetime.utcnow().strftime("%Y-%m-%d")
-            if(dateNow<search['dep']['date_departure'] and search["alertP"] != None):
-                resDep = searchFlight(search['dep'])
+            if(dateNow<search['date_departure'] and search["alertPrice"] != None):
+                resDep = searchFlight({"date_departure": search['date_departure'], "location_arrival": search['location_arrival'], "location_departure": search['location_departure'], "number_of_stops": search['number_of_stops'], "classType": search['classType']})
                 if(resDep['success']):
-                    flightDep = Flight(resDep['data']['searchResult']).output()
+                    flightRes = Flight(resDep['data']['searchResult']).output()
+                    if(flightRes['totPrice'][0] and flightRes['totPrice'][0] <= float(search['alertPrice'])):
+                        try:                            
+                            emailRes = emailPriceAlert({"email": user['email'], "newPrice": flightRes['totPrice'][0], "alertPrice": search['alertPrice'], "name": search['name'] })
+                            userMessageArr.append({"newPrice": flightRes['totPrice'][0], "alertPrice": search['alertPrice'], "name": search['name'], "emailSuccess": emailRes['success'], "message": emailRes['error'] })
+                        except Exception as e:
+                            print({"success": False, "error": e})
                 else:
-                    flightDep = search['searchResult']['dep']
-                if(search['type'] == "ROUND_TRIP"):
-                    resRet = searchFlight(search['ret'])
-                    if(resRet['success']):
-                        flightRet = Flight(resRet['data']['searchResult']).output()
-                    else:
-                        flightRet = search['searchResult']['ret']
-                else:
-                    flightRet = None
+                    flightRes = search['searchResult']
                 newSearch = copy.deepcopy(search)
                 newSearch["date_updated"] = datetime.utcnow()
-                newSearch["searchResult"] = {"dep": flightDep, "ret": flightRet}
+                newSearch["searchResult"] =  flightRes
                 newSearchData.append(newSearch)
             else:
                 newSearchData.append(search)
-        userMessage = {user["userID"]: {"data update": None, "email": None}}
         try:
             db['users'].find_one_and_update({"userID": user["userID"]},
-            {"$set": {"searchData": newSearchData}}, return_document=ReturnDocument.AFTER)
-            try:
-                emailPriceAlert(newSearchData)
-                userMessage[user["userID"]]['email'] = "success"
-            except Exception as e:
-                userMessage[user["userID"]]['email'] = e
-            userMessage[user["userID"]]['data update'] = "success"
+            {"$set": {"searchData": newSearchData}}, return_document=ReturnDocument.AFTER)   
         except Exception as e:
-            userMessage[user["userID"]]['data update'] = e
             print({"success": False, "error": e})
 
-        userMessageArr.append(userMessage)
-
-    return userMessageArr
+    print(userMessageArr)
+    return {"message": userMessageArr}
 
 def delSearch(userData):
     try:
@@ -187,8 +181,9 @@ def upSearch(userData):
     except Exception as e:
         return {"success": False, "error": e}
 
-def emailPriceAlert(fetchedSearchedData):
-    return "to be worked on later"
+def emailPriceAlert(data):
+    result = sendEmail("Flight Save Price Alert", f"Your flight named {data['name']} has lowest price of ${data['newPrice']}! Alert price was set at ${data['alertPrice']}", data['email'])
+    return result;
 
 def updateSearchData(arr, date):
     newArr = []
