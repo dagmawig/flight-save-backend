@@ -183,7 +183,7 @@ def upSearch(userData):
 
 def emailPriceAlert(data):
     result = sendEmail("Flight Save Price Alert", f"Your flight named {data['name']} has lowest price of ${data['newPrice']}! Alert price was set at ${data['alertPrice']}", data['email'])
-    return result;
+    return result
 
 def updateSearchData(arr, date):
     newArr = []
