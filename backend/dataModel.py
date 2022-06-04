@@ -20,8 +20,8 @@ priceline_api = {
     "url": url,
     "querystring": {"class_type":"ECO","sort_order":"PRICE","number_of_passengers":"1", "itinerary_type": "ONE_WAY"}, 
     "headers": {
-	"X-RapidAPI-Host": "priceline-com-provider.p.rapidapi.com",
-	"X-RapidAPI-Key": "53ccb0e66bmsh883175eecd2c429p13df65jsna6c7198d36a1"
+	"X-RapidAPI-Host": os.getenv('X-RAPIDAPI-HOST'),
+	"X-RapidAPI-Key": os.getenv('X-RAPIDAPI-KEY')
 } }
 
 client = MongoClient(connection_string)
