@@ -16,6 +16,7 @@ headers = {
 }
 url = os.getenv('URL')
 
+
 priceline_api = {
     "url": url,
     "querystring": {"class_type":"ECO","sort_order":"PRICE","number_of_passengers":"1", "itinerary_type": "ONE_WAY"}, 
@@ -27,7 +28,7 @@ priceline_api = {
 client = MongoClient(connection_string)
 db = client['DATABASES']
 
-
+# method that inserts a new user
 async def insertUser(userData):
     try:
         type(userData['email']) == str
@@ -42,6 +43,7 @@ async def insertUser(userData):
     except Exception as e:
         return {"success": False, "error": e}
 
+# method that finds an existing user from database
 def findUser(userData):
     try:
         type(userData['email']) == str
@@ -57,6 +59,7 @@ def findUser(userData):
     except Exception as e:
         return {"success": False, "error": e}
 
+# method that saves a flight search to database
 def saveSearchData(userData):
     try:
         type(userData["userID"])  == str
@@ -79,6 +82,7 @@ def saveSearchData(userData):
     except Exception as e:
         return {"success": False, "error": e}
 
+# method that searches for flight
 def searchFlight(searchData):
     try:
         type(searchData['date_departure']) == str
@@ -108,6 +112,7 @@ def searchFlight(searchData):
     except Exception as e:
         return {"success": False, "error": e}
 
+# method that checks for price changes of saved flights
 def checkP():
     checkDate = datetime.utcnow().weekday()
     if(checkDate != 1):
@@ -150,6 +155,7 @@ def checkP():
     print(userMessageArr)
     return {"message": userMessageArr}
 
+# method that deletes a saved flight search
 def delSearch(userData):
     try:
         type(userData['userID']) == str
@@ -167,6 +173,7 @@ def delSearch(userData):
     except Exception as e:
         return {"success": False, "error": e}
 
+# method that updates saved flight searches
 def upSearch(userData):
     print(userData['userID'])
     try:
@@ -181,10 +188,12 @@ def upSearch(userData):
     except Exception as e:
         return {"success": False, "error": e}
 
+# method that sends alert emails to users
 def emailPriceAlert(data):
     result = sendEmail("Flight Save Price Alert", f"Your flight named {data['name']} has lowest price of ${data['newPrice']}! Alert price was set at ${data['alertPrice']}", data['email'])
     return result
 
+# method that is used to filter out the flight search item to be deleted
 def updateSearchData(arr, date):
     newArr = []
     for search in arr:
